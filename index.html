@@ -9,6 +9,58 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Print stylesheet for PDF export -->
+    <style media="print">
+        /* Hide elements not needed in print/PDF */
+        .app-header button, 
+        .filter-container,
+        .task-actions,
+        .app-footer,
+        .toast-container {
+            display: none !important;
+        }
+        
+        /* Ensure the page has white background */
+        body, .app-container, .main-content, .checklist-container {
+            background-color: white !important;
+            color: black !important;
+        }
+        
+        /* Add page title */
+        .app-header::after {
+            content: "Generated on " attr(data-date);
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Format checklist for print */
+        .checklist-container {
+            border: 1px solid #ddd;
+            box-shadow: none !important;
+        }
+        
+        /* Ensure each category starts on a new page */
+        .category-container {
+            page-break-before: always;
+            margin-top: 20px;
+        }
+        
+        /* First category doesn't need page break */
+        .category-container:first-of-type {
+            page-break-before: avoid;
+        }
+        
+        /* Add page numbers */
+        @page {
+            margin: 1cm;
+        }
+        
+        @page:first {
+            margin-top: 2cm;
+        }
+    </style>
 </head>
 <body class="light-mode">
     <div class="app-container">
@@ -80,9 +132,13 @@
 
         <footer class="app-footer">
             <div class="footer-actions">
-                <button id="export-btn" class="secondary-btn">
-                    <i class="fas fa-download"></i>
-                    <span>Export</span>
+                <button id="export-pdf-btn" class="primary-btn">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Export as PDF</span>
+                </button>
+                <button id="export-md-btn" class="secondary-btn">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Export as Markdown</span>
                 </button>
                 <button id="clear-all-btn" class="danger-btn">
                     <i class="fas fa-trash-alt"></i>

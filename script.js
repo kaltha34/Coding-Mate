@@ -412,8 +412,10 @@ function closeCategoryModal() {
     currentTaskForCategory = null;
 }
 
-// Export checklist as text file
-function exportChecklist() {
+// No longer needed - removed dropdown toggle function
+
+// Export checklist as markdown file
+function exportMarkdown() {
     let content = '# Deployment Checklist\n\n';
     
     // Group tasks by category
@@ -454,7 +456,125 @@ function exportChecklist() {
         window.URL.revokeObjectURL(url);
     }, 0);
     
-    showToast('Checklist exported successfully');
+    showToast('Markdown file exported successfully');
+}
+
+// Export checklist as PDF using browser print functionality
+function exportPDF() {
+    try {
+        // Create a modal with instructions
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Export as PDF</h2>
+                <p>Follow these steps to export your checklist as PDF:</p>
+                <ol>
+                    <li>When the print dialog opens, select <strong>Save as PDF</strong> as the destination</li>
+                    <li>Click <strong>Save</strong> to generate your PDF file</li>
+                    <li>Choose a location to save your file</li>
+                </ol>
+                <button class="btn primary-btn" id="continue-pdf-export">Continue to PDF Export</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Add event listeners for modal
+        modal.querySelector('.close').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+        
+        modal.querySelector('#continue-pdf-export').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            setTimeout(generatePDF, 100); // Small delay to ensure modal is gone
+        });
+        
+        // Show the modal
+        setTimeout(() => {
+            modal.style.display = 'block';
+        }, 10);
+        
+        return; // Exit function here, actual PDF generation happens after user clicks continue
+    } catch (error) {
+        console.error('Error in PDF export:', error);
+        showToast('Error preparing PDF export. See console for details.', 'error');
+    }
+}
+
+// Function to actually generate the PDF
+function generatePDF() {
+    try {
+        // Add current date to header for print stylesheet
+        const now = new Date();
+        const dateString = now.toLocaleDateString();
+        const timeString = now.toLocaleTimeString();
+        document.querySelector('.app-header').setAttribute('data-date', `${dateString} at ${timeString}`);
+        
+        // Calculate and display progress information
+        const completedCount = tasks.filter(task => task.completed).length;
+        const percentage = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
+        
+        // Create a progress element if it doesn't exist
+        let progressInfo = document.getElementById('print-progress-info');
+        if (!progressInfo) {
+            progressInfo = document.createElement('div');
+            progressInfo.id = 'print-progress-info';
+            progressInfo.style.margin = '20px 0';
+            progressInfo.style.fontSize = '14px';
+            progressInfo.style.fontWeight = 'bold';
+            progressInfo.style.color = '#2563eb'; // Primary color
+            document.querySelector('.main-content').insertBefore(progressInfo, document.querySelector('.filter-container'));
+        }
+        
+        progressInfo.textContent = `Overall Progress: ${percentage}% (${completedCount}/${tasks.length} tasks completed)`;
+        
+        // Add a title for the PDF
+        let pdfTitle = document.getElementById('pdf-title');
+        if (!pdfTitle) {
+            pdfTitle = document.createElement('h1');
+            pdfTitle.id = 'pdf-title';
+            pdfTitle.style.display = 'none'; // Hidden in normal view
+            pdfTitle.style.textAlign = 'center';
+            pdfTitle.style.margin = '20px 0';
+            pdfTitle.style.color = '#2563eb';
+            pdfTitle.className = 'pdf-only';
+            pdfTitle.textContent = 'Deployment Checklist';
+            document.querySelector('.main-content').insertBefore(pdfTitle, progressInfo);
+        }
+        
+        // Add print-only class to body for CSS targeting
+        document.body.classList.add('printing');
+        
+        // Show all tasks for printing regardless of current filter
+        const currentFilter = activeFilter;
+        const currentSearch = searchQuery;
+        
+        // Temporarily reset filters to show all tasks
+        activeFilter = 'all';
+        searchQuery = '';
+        renderTasks();
+        
+        // Print the page (this will use the print stylesheet)
+        setTimeout(() => {
+            window.print();
+            
+            // Restore the previous state after printing
+            document.body.classList.remove('printing');
+            activeFilter = currentFilter;
+            searchQuery = currentSearch;
+            renderTasks();
+            
+            // Remove the print-only elements
+            if (progressInfo) progressInfo.style.display = 'none';
+            if (pdfTitle) pdfTitle.style.display = 'none';
+            
+            showToast('PDF export completed');
+        }, 300);
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        showToast('Error generating PDF. See console for details.', 'error');
+    }
 }
 
 // Render tasks to the DOM
@@ -633,8 +753,9 @@ function setupEventListeners() {
     // Theme toggle
     themeToggleBtn.addEventListener('click', toggleTheme);
     
-    // Export checklist
-    exportBtn.addEventListener('click', exportChecklist);
+    // Export buttons
+    document.getElementById('export-pdf-btn').addEventListener('click', exportPDF);
+    document.getElementById('export-md-btn').addEventListener('click', exportMarkdown);
     
     // Filter buttons
     filterAllBtn.addEventListener('click', () => filterTasks('all'));

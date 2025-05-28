@@ -899,6 +899,94 @@ button:active {
     color: var(--text-secondary-dark);
 }
 
+/* Dropdown menu */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-icon {
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
+    transition: transform var(--transition-fast);
+}
+
+.dropdown.active .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 200px;
+    background-color: var(--bg-secondary-light);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-medium-light);
+    padding: 0.5rem;
+    z-index: 100;
+    display: none;
+    animation: fadeInDown 0.2s ease-in-out;
+}
+
+.dark-mode .dropdown-menu {
+    background-color: var(--bg-secondary-dark);
+    box-shadow: var(--shadow-medium-dark);
+}
+
+.dropdown.active .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius-sm);
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    color: var(--text-color-light);
+    transition: background-color var(--transition-fast);
+    cursor: pointer;
+}
+
+.dark-mode .dropdown-item {
+    color: var(--text-color-dark);
+}
+
+.dropdown-item:hover {
+    background-color: var(--hover-color-light);
+}
+
+.dark-mode .dropdown-item:hover {
+    background-color: var(--hover-color-dark);
+}
+
+.dropdown-item i {
+    color: var(--primary-color-light);
+    font-size: 1rem;
+    width: 1.25rem;
+    text-align: center;
+}
+
+.dark-mode .dropdown-item i {
+    color: var(--primary-color-dark);
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Modal styles */
 .modal {
     display: none;
@@ -1007,6 +1095,82 @@ button:active {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+}
+
+/* PDF-only elements */
+.pdf-only {
+    display: none;
+}
+
+body.printing .pdf-only {
+    display: block !important;
+}
+
+/* Print styles for PDF export */
+@media print {
+    /* Hide elements not needed in print/PDF */
+    .app-header button, 
+    .filter-container,
+    .task-actions,
+    .app-footer,
+    .toast-container,
+    .modal {
+        display: none !important;
+    }
+    
+    /* Show PDF-only elements */
+    .pdf-only {
+        display: block !important;
+    }
+    
+    /* Ensure the page has white background */
+    body, .app-container, .main-content, .checklist-container {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    /* Format header for print */
+    .app-header {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    /* Add date to header */
+    .app-header::after {
+        content: "Generated on " attr(data-date);
+        display: block;
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    /* Format task items for print */
+    .task-item {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border: 1px solid #eee;
+        margin-bottom: 8px;
+    }
+    
+    /* Ensure each category starts on a new page */
+    .category-container {
+        break-before: page;
+        page-break-before: always;
+        margin-top: 20px;
+    }
+    
+    /* First category doesn't need page break */
+    .category-container:first-of-type {
+        break-before: avoid;
+        page-break-before: avoid;
+    }
+    
+    /* Set page margins */
+    @page {
+        margin: 1cm;
+        size: portrait;
+    }
 }
 
 .category-option {
